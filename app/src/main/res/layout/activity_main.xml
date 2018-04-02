@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="viewModel"
+            type="com.kelly.keyboard.MainViewModel" />
+    </data>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+        <LinearLayout
+            android:id="@+id/llRoot"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="400dip" />
+
+            <com.kelly.keyboard.KeyBoardEditText
+                android:id="@+id/etKeyboard"
+                android:layout_width="match_parent"
+                android:layout_height="50dip"
+                android:background="@android:color/holo_orange_dark" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="#999999"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <include
+                android:id="@+id/contentKeyboard"
+                layout="@layout/content_keyboard" />
+        </LinearLayout>
+    </RelativeLayout>
+</layout>
