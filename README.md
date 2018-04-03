@@ -2,8 +2,6 @@
 ============
 
 ## 效果图
-
-登录模块
 -----
 ![capture](https://github.com/zongkaili/SecureKeyboard/capture/capture.gif?raw=true)
 ![capture1](https://github.com/zongkaili/SecureKeyboard/capture/capture1.jpg?raw=true)
