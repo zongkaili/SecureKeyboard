@@ -206,8 +206,8 @@
 
         </Key>
         <Key
-            android:codes="-4"
-            android:keyLabel="完成"
+            android:codes="-34"
+            android:keyLabel="#+="
             android:keyWidth="20%p"
             android:horizontalGap="5%p">
 

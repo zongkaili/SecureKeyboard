@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
 
-    <android.inputmethodservice.KeyboardView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent" android:layout_height="wrap_content"
+    <android.inputmethodservice.KeyboardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/view_keyboard"
-        android:background="#999999"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#c7c4c4"
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:keyBackground="@drawable/selector_keyboard_key"

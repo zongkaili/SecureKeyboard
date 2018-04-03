@@ -1,5 +1,6 @@
 package com.kelly.keyboard
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.inputmethodservice.Keyboard
 import android.inputmethodservice.KeyboardView
@@ -17,45 +18,51 @@ import com.blankj.utilcode.util.KeyboardUtils
  * Dsc:
  */
 class KeyBoardEditText: AppCompatEditText {
-    private var context_: Context? = null
-    private var keyboradNumber: Keyboard? = null
-    private var keyboradLetter: Keyboard? = null
-    private var keyboardView: KeyboardView? = null
-    private var viewGroup: ViewGroup? = null
+    private var mContext: Context? = null
+    private var mKeyboardNumber: Keyboard? = null
+    private var mKeyboardLetter: Keyboard? = null
+    private var mKeyboardSymbol: Keyboard? = null
+    private var mKeyboardView: KeyboardView? = null
+    private var mKeyboardParent: ViewGroup? = null
+    private var mKeyboardType = KEYBOARD_TYPE_NUMBER// 当前键盘类型，默认数字键盘
+    var mListener: OnKeyboardStateChangeListener? = null
+    var isCapital = false   // 是否为大写字母
 
-    // 是否发生键盘切换
-    var changeLetter = false
-
-    // 是否为大写字母
-    var isCapital = false
-
-    var listener: OnKeyboardStateChangeListener? = null
+    companion object {
+        private const val KEYCODE_SPACE = 32
+        private const val KEYCODE_LETTER = -33
+        private const val KEYCODE_SYMBOL = -34
+        private const val KEYBOARD_TYPE_NUMBER = 0x001
+        private const val KEYBOARD_TYPE_LETTER = 0x002
+        private const val KEYBOARD_TYPE_SYMBOL = 0x003
+    }
 
     constructor(context: Context) : super(context) {
-        context_ = context
+        mContext = context
         initEditView()
     }
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        context_ = context
+        mContext = context
         initEditView()
     }
 
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        context_ = context
+        mContext = context
         initEditView()
     }
 
     private fun initEditView() {
-        keyboradNumber = Keyboard(context_, R.xml.keyboard_number)
-        keyboradLetter = Keyboard(context_, R.xml.keyboard_letter)
+        mKeyboardNumber = Keyboard(mContext, R.xml.keyboard_number)
+        mKeyboardLetter = Keyboard(mContext, R.xml.keyboard_letter)
+        mKeyboardSymbol = Keyboard(mContext, R.xml.keyboard_symbol)
     }
 
     fun setKeyboardType(viewGroup: ViewGroup, keyboardView: KeyboardView, number: Boolean) {
-        this.keyboardView = keyboardView
-        this.viewGroup = viewGroup
+        this.mKeyboardView = keyboardView
+        this.mKeyboardParent = viewGroup
         if (number) {
-            keyboardView.keyboard = keyboradNumber
+            keyboardView.keyboard = mKeyboardNumber
         }
         keyboardView.isPreviewEnabled = true
         keyboardView.setOnKeyboardActionListener(object : KeyboardView.OnKeyboardActionListener {
@@ -86,26 +93,34 @@ class KeyBoardEditText: AppCompatEditText {
             override fun onKey(primaryCode: Int, keyCodes: IntArray?) {
                 val editable = text
                 val start = selectionStart
-                // 删除功能
+                // 删除
                 if (primaryCode == Keyboard.KEYCODE_DELETE) {
                     if (editable.isNotEmpty() && start>0) {
                         editable.delete(start-1, start)
                     }
                 }
-                // 字母键盘与数字键盘切换
+                // 数字键盘
                 else if (primaryCode == Keyboard.KEYCODE_MODE_CHANGE) {
-                    changeKeyBoard(!changeLetter)
+                    changeKeyBoard(KEYBOARD_TYPE_NUMBER)
                 }
-                // 完成
+                // 字母键盘
+                else if (primaryCode == KEYCODE_LETTER) {
+                    changeKeyBoard(KEYBOARD_TYPE_LETTER)
+                }
+                // 符号键盘
+                else if (primaryCode == KEYCODE_SYMBOL) {
+                    changeKeyBoard(KEYBOARD_TYPE_SYMBOL)
+                }
+                // 完成 (暂时未用)
                 else if (primaryCode == Keyboard.KEYCODE_DONE) {
                     keyboardView.visibility = View.GONE
                     viewGroup.visibility = View.GONE
-                    listener?.hide()
+                    mListener?.hide()
                 }
                 // 切换大小写
                 else if (primaryCode == Keyboard.KEYCODE_SHIFT) {
                     changeCapital(!isCapital)
-                    keyboardView.keyboard = keyboradLetter
+                    keyboardView.keyboard = mKeyboardLetter
                 }
                 else {
                     editable.insert(start, Character.toString(primaryCode.toChar()))
@@ -118,26 +133,32 @@ class KeyBoardEditText: AppCompatEditText {
         })
     }
 
-    fun changeKeyBoard(letter: Boolean) {
-        changeLetter = letter
-        if (changeLetter) {
-            keyboardView?.keyboard = keyboradLetter
-        }
-        else {
-            keyboardView?.keyboard = keyboradNumber
+    fun onFinishClick() {
+        mKeyboardView?.visibility = View.GONE
+        mKeyboardParent?.visibility = View.GONE
+        mListener?.hide()
+    }
+
+    fun changeKeyBoard(type: Int) {
+        mKeyboardType = type
+        mKeyboardView?.keyboard = when (type) {
+            KEYBOARD_TYPE_NUMBER-> mKeyboardNumber
+            KEYBOARD_TYPE_LETTER-> mKeyboardLetter
+            KEYBOARD_TYPE_SYMBOL-> mKeyboardSymbol
+            else-> mKeyboardNumber
         }
     }
 
     fun canShowPreview(primaryCode: Int) {
-        val nolists = arrayOf(Keyboard.KEYCODE_SHIFT, Keyboard.KEYCODE_MODE_CHANGE, Keyboard.KEYCODE_CANCEL,
-                Keyboard.KEYCODE_DONE, Keyboard.KEYCODE_DELETE, Keyboard.KEYCODE_ALT, 32)
-        keyboardView?.isPreviewEnabled = !nolists.contains(primaryCode)
+        val noPreviewKeys = arrayOf(Keyboard.KEYCODE_SHIFT, Keyboard.KEYCODE_MODE_CHANGE, Keyboard.KEYCODE_CANCEL,
+                Keyboard.KEYCODE_DONE, Keyboard.KEYCODE_DELETE, Keyboard.KEYCODE_ALT, KEYCODE_SPACE, KEYCODE_LETTER, KEYCODE_SYMBOL)
+        mKeyboardView?.isPreviewEnabled = !noPreviewKeys.contains(primaryCode)
     }
 
     fun changeCapital(isCapital: Boolean) {
         val lowercase = "abcdefghijklmnopqrstuvwxyz"
 
-        val keyList = keyboradLetter?.keys
+        val keyList = mKeyboardLetter?.keys
         keyList?.forEach {
             if (it?.label != null && lowercase.indexOf(it.label.toString().toLowerCase()) != -1) {
                 if (isCapital) {
@@ -159,24 +180,25 @@ class KeyBoardEditText: AppCompatEditText {
         this.isCapital = isCapital
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         KeyboardUtils.hideSoftInput(this)
         if (event?.action == MotionEvent.ACTION_UP) {
-            if (keyboardView?.visibility != View.VISIBLE) {
-                keyboardView?.visibility = View.VISIBLE
-                viewGroup?.visibility = View.VISIBLE
-                listener?.show()
+            if (mKeyboardView?.visibility != View.VISIBLE) {
+                mKeyboardView?.visibility = View.VISIBLE
+                mKeyboardParent?.visibility = View.VISIBLE
+                mListener?.show()
             }
         }
         return true
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK && keyboardView?.visibility != View.GONE
-                && viewGroup?.visibility != View.GONE) {
-            keyboardView?.visibility = View.GONE
-            viewGroup?.visibility = View.GONE
-            listener?.hide()
+        if (keyCode == KeyEvent.KEYCODE_BACK && mKeyboardView?.visibility != View.GONE
+                && mKeyboardParent?.visibility != View.GONE) {
+            mKeyboardView?.visibility = View.GONE
+            mKeyboardParent?.visibility = View.GONE
+            mListener?.hide()
             return true
         }
         return super.onKeyDown(keyCode, event)

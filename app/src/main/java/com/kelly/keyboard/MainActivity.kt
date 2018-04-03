@@ -11,8 +11,7 @@ class MainActivity : BaseBindingActivity<ActivityMainBinding>() {
 
     override fun getLayoutId(): Int  = R.layout.activity_main
 
-    // 滚动距离
-    var height = 0
+    var height = 0// 滚动距离
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,20 +22,22 @@ class MainActivity : BaseBindingActivity<ActivityMainBinding>() {
         }
 
         mBinding.etKeyboard.setKeyboardType(mBinding.llContent, mBinding.contentKeyboard!!.viewKeyboard, true)
-        mBinding.etKeyboard.listener = object : KeyBoardEditText.OnKeyboardStateChangeListener {
+        mBinding.keyboardFinish.setOnClickListener {
+            mBinding.etKeyboard.onFinishClick()
+        }
+        mBinding.etKeyboard.mListener = object : KeyBoardEditText.OnKeyboardStateChangeListener {
             override fun show() {
                 mBinding.etKeyboard.post {
                     val rect = IntArray(2)
                     mBinding.etKeyboard.getLocationOnScreen(rect)
                     val y = rect[1]
 
-                    mBinding.contentKeyboard!!.viewKeyboard?.getLocationOnScreen(rect)
+                    mBinding.llContent.getLocationOnScreen(rect)
                     val keyboardY = rect[1]
 
                     height = y-(keyboardY-mBinding.etKeyboard.measuredHeight)
                     mBinding.llRoot.scrollBy(0, height)
                 }
-
             }
 
             override fun hide() {
