@@ -3,7 +3,8 @@
 
 ## 效果图
 -----
-![capture](https://github.com/zongkaili/SecureKeyboard/blob/master/capture/capture.gif?raw=false)
+![capture](https://github.com/zongkaili/SecureKeyboard/blob/master/capture/capture.gif?raw=true)
+-----
 ![capture1](https://github.com/zongkaili/SecureKeyboard/blob/master/capture/capture1.jpg?raw=true)
 ![capture2](https://github.com/zongkaili/SecureKeyboard/blob/master/capture/capture2.jpg?raw=true)
 ![capture3](https://github.com/zongkaili/SecureKeyboard/blob/master/capture/capture3.jpg?raw=true)
